@@ -1,0 +1,2 @@
+# generador
+Generador codeigniter MVC
