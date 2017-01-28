@@ -9,10 +9,7 @@ class Generador extends MY_Controller {
     private $nombre_tabla='';
     /*
      * VARIABLES CON MSJ:
-     * alert alert-info
-     * alert alert-success
-     * alert alert-danger
-     *      */
+     * alert alert-info | alert alert-success | alert alert-danger*/
     public $msj = NULL;
 
     public function __construct() {
@@ -144,7 +141,7 @@ public $table_name = \''.$nombre_tabla.'\';';
         $cuerpo = '
             }
         }';
-        fwrite($file, $input . PHP_EOL); 
+        fwrite($file, $cuerpo . PHP_EOL); 
         
         
         $cuerpo = 'function set_variables_off() {';
@@ -162,13 +159,16 @@ public $table_name = \''.$nombre_tabla.'\';';
         fwrite($file, $cuerpo . PHP_EOL);
         
         $cuerpo = 'function setear($id){
-        $id = intval($id);
-        $this->db->where(\'id\',$id);
-        $this->db->select(\'*\');
-        $query = $this->db->get($this->table_name);
-        if($query->result()){            
-            $this->set_variables_on($query);
-        }else{';
+            $id = intval($id);
+            $this->db->where(\'id\',$id);
+            $this->db->select(\'*\');
+            $query = $this->db->get($this->table_name);
+            if($query->result()){            
+                $this->set_variables_on($query);
+            }else{
+                $this->set_variables_off();
+            }
+        }';
              
             fwrite($file, $cuerpo . PHP_EOL); 
              
@@ -237,19 +237,17 @@ public $table_name = \''.$nombre_tabla.'\';';
         $form = substr($nombre_tabla,0,-1);
         
         $file = fopen("generar/".strtolower($nombre_tabla)."_c.php", "w") or die("Error al Crear el archivo");
-             
-        $cuerpo = '<?php
-        defined(\'BASEPATH\') OR exit(\'No direct script access allowed\');
-        class '.strtolower($nombre_tabla).' extends MY_Admin {';
-            
         
-        $cuerpo .= '
+        $cuerpo = '<?php
+            defined(\'BASEPATH\') OR exit(\'No direct script access allowed\');
+        class '.strtolower($nombre_tabla).' extends MY_Admin {';
+        
+        fwrite($file, $cuerpo . PHP_EOL);
+        
+        $cuerpo = '
             /*
             * VARIABLES CON MSJ:
-            * alert alert-info
-            * alert alert-success
-            * alert alert-danger
-            *      */
+            * alert alert-info | alert alert-success | alert alert-danger  */
             public $msj = NULL;
             private $title_head = \''.ucwords($nombre_tabla).'\';
             private $directorio = \'admin/\';
