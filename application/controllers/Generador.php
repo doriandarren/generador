@@ -158,22 +158,21 @@ public $table_name = \''.$nombre_tabla.'\';';
         $cuerpo = '}';
         fwrite($file, $cuerpo . PHP_EOL);
         
-        $cuerpo = 'function setear($id){
-            $id = intval($id);
-            $this->db->where(\'id\',$id);
-            $this->db->select(\'*\');
-            $query = $this->db->get($this->table_name);
-            if($query->result()){            
-                $this->set_variables_on($query);
-            }else{
-                $this->set_variables_off();
-            }
-        }';
-             
-            fwrite($file, $cuerpo . PHP_EOL); 
-             
-            
-    $cuerpo = '    
+        foreach($campos as $val){ 
+            $input = 'function set_'.$val.'($'.$val.'){
+                $this->db->where(\''.$val.'\',$'.$val.');
+                $this->db->select(\'*\');
+                $query = $this->db->get($this->table_name);
+                if($query->result()){            
+                    $this->set_variables_on($query);
+                }else{
+                    $this->set_variables_off();
+                }
+            }';
+            fwrite($file, $input . PHP_EOL);            
+        }    
+        
+        $cuerpo = '    
     function upsert($data){
         $this->db->where(\'id\', $data[\'id\']);
         $this->db->select(\'id\');
@@ -193,10 +192,12 @@ public $table_name = \''.$nombre_tabla.'\';';
             return TRUE;
         }
     }
+    
+    /*$where recibe un array */
     function listar($where = NULL, $limit = NULL){           
         if($where!=NULL){            
-            foreach ($where as $key => $value) {
-                $this->db->where($key,$value);
+            foreach ($where as $campo => $valor) {
+                $this->db->where($campo,$valor);
             }
         }           
         $query = $this->db->get_where($this->table_name);       
@@ -280,14 +281,25 @@ public $table_name = \''.$nombre_tabla.'\';';
                 $data[\'title_head\'] = $this->title_head;
                 $data[\'msj\'] = $this->msj;
                 
-                $this->'.strtolower($nombre_tabla).'_m->setear($id);';        
+                $this->'.strtolower($nombre_tabla).'_m->set_id($id);';        
         fwrite($file, $cuerpo . PHP_EOL);
         
         foreach($campos as $val){  
-            $input = '$data[\''.$val.'\']= $this->'.strtolower($nombre_tabla).'_m->get_'.$val.'();';           
+            $input = '$datos[\''.$val.'\']= $this->'.strtolower($nombre_tabla).'_m->get_'.$val.'();';           
             fwrite($file, $input . PHP_EOL);            
         }
      
+        foreach($campos as $val){
+            $parte_val = explode("_id", $val);            
+            $pos = strpos($val, '_id');
+            if ($pos > 0) {
+                $input = '//Listar los '.$parte_val[0].'
+                $this->load->model(\''.strtolower($parte_val[0]).'_m\');
+                $datos[\'lista_'.strtolower($parte_val[0]).'\'] = $this->'.strtolower($parte_val[0]).'_m->listar();';
+                fwrite($file, $input . PHP_EOL);
+            }            
+        }
+                
         $cuerpo = '  
                 $this->breadCrumbs[] = array(\'text\' => \''.ucwords($nombre_tabla).'\', \'href\'=>  site_url($this->directorio . \''.$nombre_tabla.'\'));
                 if($id===0){
@@ -296,7 +308,7 @@ public $table_name = \''.$nombre_tabla.'\';';
                     $this->breadCrumbs[] = array(\'text\' => \'Editar\'); 
                 }
                 $this->load->view($this->directorio . \'plantilla/head\',$data);        
-                $this->load->view($this->directorio . \''.$form.'\', $data);        
+                $this->load->view($this->directorio . \''.$form.'\', $datos);        
                 $this->load->view($this->directorio . \'plantilla/footer\');        
             }';
         
@@ -307,7 +319,7 @@ public $table_name = \''.$nombre_tabla.'\';';
         fwrite($file, $cuerpo . PHP_EOL);
 
         foreach($campos as $val){  
-            $input = '$data[\''.$val.'\']=$this->input->post("'.$val.'", TRUE);';           
+            $input = '$datos[\''.$val.'\']=$this->input->post("'.$val.'", TRUE);';           
             fwrite($file, $input . PHP_EOL);            
         }
 
@@ -321,14 +333,27 @@ public $table_name = \''.$nombre_tabla.'\';';
             if ($this->form_validation->run() === FALSE){
             
                 $data[\'title_head\'] = $this->title_head;
-                $data[\'msj\'] = array(\'alert alert-danger\',\'Error: No se guardaron los datos\');
+                $data[\'msj\'] = array(\'alert alert-danger\',\'Error: No se guardaron los datos\');';
+        fwrite($file, $cuerpo . PHP_EOL); 
             
+        foreach($campos as $val){
+            $parte_val = explode("_id", $val);            
+            $pos = strpos($val, '_id');
+            if ($pos > 0) {
+                $input = '//Listar los '.$parte_val[0].'
+                $this->load->model(\''.strtolower($parte_val[0]).'_m\');
+                $datos[\'lista_'.strtolower($parte_val[0]).'\'] = $this->'.strtolower($parte_val[0]).'_m->listar();';
+                fwrite($file, $input . PHP_EOL);
+            }            
+        }
+        
+        $cuerpo = '
             $this->load->view($this->directorio . \'plantilla/head\',$data);        
-            $this->load->view($this->directorio . \''.$form.'\', $data);        
+            $this->load->view($this->directorio . \''.$form.'\', $datos);        
             $this->load->view($this->directorio . \'plantilla/footer\');            
         }else{            
             
-            $resultado = $this->'.strtolower($nombre_tabla).'_m->upsert($data);
+            $resultado = $this->'.strtolower($nombre_tabla).'_m->upsert($datos);
             if($resultado==TRUE){
                 $this->mensajeExito();
             }else{
@@ -476,22 +501,50 @@ $cuerpo = '
         
         foreach($campos as $val){  
             $des= str_replace('_', ' ', $val);
-            
-            if($des!='id'){
-            $input = '<div class="form-group">
-                    <label for="'.$val.'" class="control-label col-sm-2">'.ucwords($des).'</label>
-                    <div class="col-sm-4">
-                        <input type="text" name="'.$val.'" id="'.$val.'" 
-                               class="form-control" value="<?= $'.$val.' ?>" placeholder="'.$val.'">
-                    </div><?= form_error(\''.$val.'\'); ?>
-                </div>';    
-            
-            
-            
-            
-            fwrite($file, $input . PHP_EOL);
-            }
+            $pos = strpos($val, '_id');
+            if($pos === FALSE){
+                if($des!='id'){
+                $input = '<div class="form-group">
+                        <label for="'.$val.'" class="control-label col-sm-2">'.ucwords($des).'</label>
+                        <div class="col-sm-4">
+                            <input type="text" name="'.$val.'" id="'.$val.'" 
+                                   class="form-control" value="<?= $'.$val.' ?>" placeholder="'.$val.'">
+                        </div><?= form_error(\''.$val.'\'); ?>
+                    </div>'; 
+                fwrite($file, $input . PHP_EOL);
+                }
+            }            
         }
+            
+        
+        foreach($campos as $val){
+             
+            $parte_val = explode("_id", $val); 
+            $des= str_replace('_', ' ', $parte_val[0]);             
+            $pos = strpos($val, '_id');
+            if ($pos > 0) {                
+                $input = ' <div class="form-group">
+            <label for="'.$val.'" class="col-sm-2 control-label">'.$des.'</label> 
+            <div class="col-sm-4">
+                <select name="'.$val.'" class="form-control" id="'.$val.'">
+                    <?php
+                    echo "<option value=\'\'>Seleccione</option>";
+                    foreach ($lista_'.$parte_val[0].' as $rows) {
+                        if ('.$val.' == $rows->id) {
+                            echo "<option value=" . $rows->id . " selected>" . $rows->descripcion . "</option>";
+                        } else {
+                            echo "<option value=" . $rows->id . ">" . $rows->descripcion . "</option>";
+                        }
+                    }
+                    ?>
+                </select>
+                <?php echo form_error(\''.$val.'\'); ?>
+            </div>
+        </div>';            
+                fwrite($file, $input . PHP_EOL);
+            }            
+        }
+        
         
         $final = '<div class="col-sm-4 col-sm-offset-6">
                     <button type="submit" id="consultar" class="btn btn-primary">Guardar</button>
