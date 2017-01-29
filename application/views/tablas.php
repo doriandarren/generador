@@ -1,5 +1,6 @@
 <div class="container">
-    <div class="rows">        
+    <div class="rows">               
+        <div id="res"></div>        
         <div class="panel panel-info">
             <div class="panel-heading">
                 BASE DE DATOS

@@ -27,4 +27,20 @@ class Generador_m extends CI_Model {
             return FALSE;
         }
     }
+    
+    public function buscar_bd($bd){
+        //$this->db->select('*');        
+        $query = $this->db->query("SELECT COLUMN_NAME "
+                . "FROM INFORMATION_SCHEMA.COLUMNS "
+                . "WHERE table_schema = '".$bd."'");        
+        /*$query = $this->db->query("SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_name = '".$tabla."'");*/
+        //echo  $this->db->last_query();        
+        if($query->result()){
+            return $query->result();
+        }else{ 
+            return FALSE;
+        }
+    }
 }

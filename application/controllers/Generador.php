@@ -26,9 +26,11 @@ class Generador extends MY_Controller {
         
         $this->breadCrumbs[] = array('text' => 'Tablas'); 
         
+        //$data_footer['js'] = array('jquery-ui.min','baseDatos');
+        
         $this->load->view('head', $data_head);
         $this->load->view('tablas', $datos);
-        $this->load->view('footer', TRUE);
+        $this->load->view('footer', $data_footer);
     }
 
     function buscar_columnas(){
@@ -56,6 +58,13 @@ class Generador extends MY_Controller {
             $this->load->view('footer', TRUE);
         }
     }    
+    
+    function listar_bd() {
+        $nombre_bd=trim($this->input->post("bus_bd"));
+        $json = $this->Generador_m->buscar_bd($nombre_bd);
+        echo json_encode($json);
+    }
+    
     
     function generar_archivo(){          
         $nombre_bd=trim($this->input->post("nombre_bd"));
