@@ -1,6 +1,10 @@
 <div class="container">
-    <div class="rows">               
-        <div id="res"></div>        
+    <div class="rows">      
+        <div class="col-md-12"><?= var_dump($bases_datos) ?></div>
+    </div>
+</div>
+<div class="container">
+    <div class="rows">        
         <div class="panel panel-info">
             <div class="panel-heading">
                 BASE DE DATOS

@@ -26,11 +26,13 @@ class Generador extends MY_Controller {
         
         $this->breadCrumbs[] = array('text' => 'Tablas'); 
         
+        $datos['bases_datos'] = $this->Generador_m->buscar_bd();
+        
         //$data_footer['js'] = array('jquery-ui.min','baseDatos');
         
         $this->load->view('head', $data_head);
         $this->load->view('tablas', $datos);
-        $this->load->view('footer', $data_footer);
+        $this->load->view('footer');
     }
 
     function buscar_columnas(){
