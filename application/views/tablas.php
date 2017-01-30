@@ -1,6 +1,6 @@
 <div class="container">
     <div class="rows">      
-        <div class="col-md-12"><?= var_dump($bases_datos) ?></div>
+        <div class="col-md-12"><?php //var_dump($bases_datos) ?></div>
     </div>
 </div>
 <div class="container">

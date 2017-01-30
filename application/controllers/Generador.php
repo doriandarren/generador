@@ -366,9 +366,9 @@ public $table_name = \''.$nombre_tabla.'\';';
             
             $resultado = $this->'.strtolower($nombre_tabla).'_m->upsert($datos);
             if($resultado==TRUE){
-                $this->mensajeExito();
+                redirect($this->directorio . strtolower($this->title_head).\'/mensaje/formE\', \'refresh\');
             }else{
-                $this->mensajePersonalizado(\'alert-danger\',\'Error: NO se pudo guardar\');                
+                redirect($this->directorio . strtolower($this->title_head).\'/mensaje/formF\', \'refresh\');              
             }
         }        
     }';
@@ -380,18 +380,53 @@ public $table_name = \''.$nombre_tabla.'\';';
             public function eliminar($id_e) { 
         
         if($id_e===NULL){
-            $this->mensajePersonalizado(\'alert alert-danger\',\'No existe el ID\');
-            $this->index();
+            redirect($this->directorio . strtolower($this->title_head).\'/mensaje/eliF\', \'refresh\');
         }
         $id = intval($id_e);
         
         $resultado = $this->'.strtolower($nombre_tabla).'_m->eliminar($id);
         if ($resultado === TRUE) {
-            $this->mensajeExito();
+            redirect($this->directorio . strtolower($this->title_head).\'/mensaje/eliE\', \'refresh\');
         } else {
-            $this->mensajePersonalizado(\'alert alert-danger\',\'Error: no se elimino el registro\'); 
+            redirect($this->directorio . strtolower($this->title_head).\'/mensaje/eliF\', \'refresh\');
         }
     } ';
+        fwrite($file, $cuerpo . PHP_EOL);
+        
+        
+    $cuerpo = 'public function mensaje($param) {        
+        if($param===\'formE\'){
+            $this->msj = array(\'alert alert-success\',\'Datos Guardados\');
+            $this->index();
+        }
+        
+        if($param===\'formF\'){
+            $this->msj = array(\'alert alert-danger\',\'Error: No se guardaron los datos\');
+            $this->index();
+        }
+        
+        if($param===\'eliE\'){
+            $this->msj = array(\'alert alert-success\', \'Datos Eliminados\');
+            $this->index();
+        }
+        
+        if($param===\'eliF\'){
+            $this->msj = array(\'alert alert-danger\', \'Error: No se eliminaron los datos\');
+            $this->index();
+        }
+        
+        if($param===\'eliAso\'){
+            /*CATEGORIA ESTA ASOCIADA A LA NOTICIA*/
+            $this->msj = array(\'alert alert-danger\',
+            \'Error: no se puede eliminar porque existe asignado a una Noticia. Primero elimine la noticia.\');
+            $this->index();
+        }
+    }';    
+        
+        
+        
+        
+        
         
         $cuerpo .='
         }
