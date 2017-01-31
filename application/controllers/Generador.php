@@ -248,11 +248,13 @@ public $table_name = \''.$nombre_tabla.'\';';
     public function generarControlador($nombre_tabla, $campos, $nombre_bd) {
         $form = substr($nombre_tabla,0,-1);
         
+        
+        
         $file = fopen("generar/".strtolower($nombre_tabla)."_c.php", "w") or die("Error al Crear el archivo");
         
         $cuerpo = '<?php
             defined(\'BASEPATH\') OR exit(\'No direct script access allowed\');
-        class '.strtolower($nombre_tabla).' extends MY_Admin {';
+        class '. ucwords($nombre_tabla).' extends MY_Admin {';
         
         fwrite($file, $cuerpo . PHP_EOL);
         
@@ -479,6 +481,7 @@ $cuerpo = '
                 fwrite($file, $input . PHP_EOL); 
                 
                 $cuerpo = '
+                    <th>ACCION</th>
                     </tr>
                 </thead>
                 <tbody>
