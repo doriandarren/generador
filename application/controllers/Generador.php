@@ -579,7 +579,7 @@ $cuerpo = '
                     <?php
                     echo "<option value=\'\'>Seleccione</option>";
                     foreach ($lista_'.$parte_val[0].' as $rows) {
-                        if ('.$val.' == $rows->id) {
+                        if ($'.$val.' == $rows->id) {
                             echo "<option value=" . $rows->id . " selected>" . $rows->descripcion . "</option>";
                         } else {
                             echo "<option value=" . $rows->id . ">" . $rows->descripcion . "</option>";
